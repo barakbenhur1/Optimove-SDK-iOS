@@ -158,9 +158,9 @@ final class EventValidator: Pipe {
         return [
             verifyAllowedNumberOfParameters(event),
             verifyMandatoryParameters(eventConfiguration, event),
-            try verifySetUserIdEvent(event),
-            try verifySetEmailEvent(event),
-            try verifyEventParameters(event, eventConfiguration)
+//            try verifySetUserIdEvent(event),
+//            try verifySetEmailEvent(event),
+//            try verifyEventParameters(event, eventConfiguration)
             ].flatMap { $0 }
     }
 
