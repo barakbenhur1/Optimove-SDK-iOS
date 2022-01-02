@@ -152,16 +152,18 @@ final class EventValidator: Pipe {
     }
 
     func validate(event: Event, withConfigs configs: [String: EventsConfig]) throws -> [ValidationError] {
-        guard let eventConfiguration = configs[event.name] else {
-            return [ValidationError.undefinedName(name: event.name)]
-        }
-        return [
-            verifyAllowedNumberOfParameters(event),
-            verifyMandatoryParameters(eventConfiguration, event),
+//        guard let eventConfiguration = configs[event.name] else {
+//            return [ValidationError.undefinedName(name: event.name)]
+//        }
+//        return [
+//            verifyAllowedNumberOfParameters(event),
+//            verifyMandatoryParameters(eventConfiguration, event),
 //            try verifySetUserIdEvent(event),
 //            try verifySetEmailEvent(event),
 //            try verifyEventParameters(event, eventConfiguration)
-            ].flatMap { $0 }
+//            ].flatMap { $0 }
+        
+        return []
     }
 
     static func translateToValidationIssue(error: ValidationError) -> ValidationIssue {

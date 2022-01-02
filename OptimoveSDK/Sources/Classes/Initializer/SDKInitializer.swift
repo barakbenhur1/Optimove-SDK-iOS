@@ -44,7 +44,7 @@ private extension SDKInitializer {
         let normalizer = ParametersNormalizer(configuration: configuration)
 
         // 2 responder
-        let validator = EventValidator(configuration: configuration, storage: storage)
+//        let validator = EventValidator(configuration: configuration, storage: storage)
 
         // 3 responder
         let decorator = ParametersDecorator(configuration: configuration)
@@ -68,8 +68,8 @@ private extension SDKInitializer {
         )
 
         decorator.next = componentHanlder
-        validator.next = decorator
-        normalizer.next = validator
+//        validator.next = decorator
+//        normalizer.next = validator
 
         pipeline.addNextPipe(normalizer)
 
