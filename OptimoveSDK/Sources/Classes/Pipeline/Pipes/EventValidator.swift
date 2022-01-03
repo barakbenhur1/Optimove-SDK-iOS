@@ -78,15 +78,15 @@ final class EventValidator: Pipe {
 
     func verifyMandatoryParameters(_ eventConfiguration: EventsConfig, _ event: Event) -> [ValidationError] {
         let errors: [ValidationError] = []
-//        for (key, parameter) in eventConfiguration.parameters {
-//            guard event.context[key] == nil else {
-//                continue
-//            }
-//            /// Check has mandatory parameter which is undefined
-//            if parameter.mandatory {
-//                errors.append(ValidationError.undefinedMandatoryParameter(name: event.name, key: key))
-//            }
-//        }
+        for (key, parameter) in eventConfiguration.parameters {
+            guard event.context[key] == nil else {
+                continue
+            }
+            /// Check has mandatory parameter which is undefined
+            if parameter.mandatory {
+                errors.append(ValidationError.undefinedMandatoryParameter(name: event.name, key: key))
+            }
+        }
         return errors
     }
 
@@ -106,7 +106,7 @@ final class EventValidator: Pipe {
             case .valid:
                 NewUserHandler(storage: storage).handle(user: user)
             case .alreadySetIn:
-                throw ValidationError.alreadySetInUserId(userId: userID)
+                errors.append(ValidationError.alreadySetInUserId(userId: userID))
             case .notValid:
                 errors.append(ValidationError.invalidUserId(userId: userID))
             }
@@ -132,22 +132,22 @@ final class EventValidator: Pipe {
 
     func verifyEventParameters(_ event: Event, _ eventConfiguration: EventsConfig) throws -> [ValidationError] {
         let errors: [ValidationError] = []
-//        for (key, value) in event.context {
-//            /// Check undefined parameter
-//            guard let parameter = eventConfiguration.parameters[key] else {
-//                errors.append(ValidationError.undefinedParameter(key: key))
-//                continue
-//            }
-//            do {
-//                try validateParameter(parameter, key, value)
-//            } catch {
-//                if let error = error as? ValidationError {
-//                    errors.append(error)
-//                    continue
-//                }
-//                throw error
-//            }
-//        }
+        for (key, value) in event.context {
+            /// Check undefined parameter
+            guard let parameter = eventConfiguration.parameters[key] else {
+                errors.append(ValidationError.undefinedParameter(key: key))
+                continue
+            }
+            do {
+                try validateParameter(parameter, key, value)
+            } catch {
+                if let error = error as? ValidationError {
+                    errors.append(error)
+                    continue
+                }
+                throw error
+            }
+        }
         return errors
     }
 
@@ -156,11 +156,11 @@ final class EventValidator: Pipe {
             return [ValidationError.undefinedName(name: event.name)]
         }
         return [
-//            verifyAllowedNumberOfParameters(event),
-//            verifyMandatoryParameters(eventConfiguration, event),
+            verifyAllowedNumberOfParameters(event),
+            verifyMandatoryParameters(eventConfiguration, event),
             try verifySetUserIdEvent(event),
             try verifySetEmailEvent(event),
-//            try verifyEventParameters(event, eventConfiguration)
+            try verifyEventParameters(event, eventConfiguration)
             ].flatMap { $0 }
     }
 
