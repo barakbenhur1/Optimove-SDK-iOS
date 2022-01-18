@@ -122,25 +122,45 @@ extension Optimove {
 // MARK: - SetUserID API call
 
 extension Optimove {
-
+    
+    /// Set the user params
+    ///
+    /// - Parameters:
+    ///   - sdkId: The user unique identifier.
+    ///   - email: The user email.
+    ///
+    ///
+    @objc public func setUserParams(sdkId userID: String?, email: String?) {
+        let function: (ServiceLocator) -> Void = { serviceLocator in
+            tryCatch {
+                var events = [Event]()
+                if let userID = userID {
+                    let user = User(userID: userID)
+                    let setUserIdEvent = try self._setUser(user, serviceLocator)
+                    events.append(setUserIdEvent)
+                    
+                    if UserValidator(storage: serviceLocator.storage()).validateNewUser(user) == .valid {
+                        serviceLocator.pipeline().deliver(.setInstallation)
+                    }
+                }
+                if let email = email {
+                    let setUserEmailEvent: Event = try self._setUserEmail(email, serviceLocator)
+                    events.append(setUserEmailEvent)
+                }
+                
+                serviceLocator.pipeline().deliver(.report(events: events))
+            }
+        }
+        container.resolve(function)
+    }
+    
     /// Set a user ID and a user email.
     ///
     /// - Parameters:
     ///   - sdkId: The user unique identifier.
     ///   - email: The user email.
     @objc public func registerUser(sdkId userID: String, email: String) {
-        let function: (ServiceLocator) -> Void = { serviceLocator in
-            tryCatch {
-                let user = User(userID: userID)
-                let setUserIdEvent = try self._setUser(user, serviceLocator)
-                let setUserEmailEvent: Event = try self._setUserEmail(email, serviceLocator)
-                serviceLocator.pipeline().deliver(.report(events: [setUserIdEvent, setUserEmailEvent]))
-                if UserValidator(storage: serviceLocator.storage()).validateNewUser(user) == .valid {
-                    serviceLocator.pipeline().deliver(.setInstallation)
-                }
-            }
-        }
-        container.resolve(function)
+        setUserParams(sdkId: userID, email: email)
     }
 
     /// Set a user ID and a user email.
@@ -156,17 +176,7 @@ extension Optimove {
     ///
     /// - Parameter userID: The user unique identifier.
     @objc public func setUserId(_ userID: String) {
-        let function: (ServiceLocator) -> Void = { serviceLocator in
-            tryCatch {
-                let user = User(userID: userID)
-                let event = try self._setUser(user, serviceLocator)
-                serviceLocator.pipeline().deliver(.report(events: [event]))
-                if UserValidator(storage: serviceLocator.storage()).validateNewUser(user) == .valid {
-                    serviceLocator.pipeline().deliver(.setInstallation)
-                }
-            }
-        }
-        container.resolve(function)
+        setUserParams(sdkId: userID, email: nil)
     }
 
     /// Set a user ID to the Optimove SDK.
@@ -184,13 +194,7 @@ extension Optimove {
     ///
     /// - Parameter email: The user email.
     @objc public func setUserEmail(email: String) {
-        let function: (ServiceLocator) -> Void = { serviceLocator in
-            tryCatch {
-                let event: Event = try self._setUserEmail(email, serviceLocator)
-                serviceLocator.pipeline().deliver(.report(events: [event]))
-            }
-        }
-        container.resolve(function)
+        setUserParams(sdkId: nil, email: email)
     }
 
     /// Set a user email to the Optimove SDK.
